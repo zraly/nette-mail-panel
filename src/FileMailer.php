@@ -48,6 +48,7 @@ class FileMailer implements IPersistentMailer
 		$time = date('YmdHis');
 		$hash = substr(md5($builtMessage->getHeader('Message-ID')), 0, 6);
 		$path = "{$this->tempDir}/{$time}-{$hash}.mail";
+		FileSystem::createDir($this->tempDir);
 		FileSystem::write($path, serialize($builtMessage));
 		$this->files = null;
 	}
@@ -108,7 +109,7 @@ class FileMailer implements IPersistentMailer
 		if ($this->files === null) {
 			$this->files = [];
 			foreach (glob("{$this->tempDir}/*.mail") ?: [] as $file) {
-				$messageId = substr($file, -11, 6);
+				$messageId = pathinfo($file, PATHINFO_FILENAME);
 				$this->files[$messageId] = $file;
 			}
 			arsort($this->files);
