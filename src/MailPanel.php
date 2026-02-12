@@ -147,14 +147,6 @@ class MailPanel implements IBarPanel
 				return $this->decodeBody($part);
 			});
 
-			$this->latte->addFilter('htmlBody', function (MimePart $part): string {
-				if ($part instanceof Message && $part->getHtmlBody() !== '') {
-					return $part->getHtmlBody();
-				}
-
-				return $this->findBodyByContentType($part, 'text/html') ?? '';
-			});
-
 			$this->latte->addFilter('previewHtml', function (MimePart $part): string {
 				$htmlBody = $this->extractHtmlBody($part);
 				if ($htmlBody !== '') {
@@ -210,7 +202,9 @@ class MailPanel implements IBarPanel
 	{
 		if ($this->mimePartPartsProperty === null) {
 			$this->mimePartPartsProperty = new \ReflectionProperty(MimePart::class, 'parts');
-			$this->mimePartPartsProperty->setAccessible(true);
+			if (PHP_VERSION_ID < 80100) {
+				$this->mimePartPartsProperty->setAccessible(true);
+			}
 		}
 
 		$parts = $this->mimePartPartsProperty->getValue($part);
